@@ -56,14 +56,14 @@ INSERT INTO ALUNOS (nome, cpf, dt_nascimento) VALUES
 ('Juliana Costa', '96385274104', '2008-07-04'),
 ('Rafael Almeida', '15975348602', '2007-05-29');
 CREATE TABLE MATRICULAS (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    aluno_id INT NOT NULL,
-    disciplina_id INT NOT NULL,
-    data_matricula DATE NOT NULL,
-    nota DECIMAL(4,2),
-    FOREIGN KEY (aluno_id) REFERENCES ALUNOS(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (disciplina_id) REFERENCES DISCIPLINAS(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    UNIQUE (aluno_id, disciplina_id)
+id INT AUTO_INCREMENT PRIMARY KEY,
+aluno_id INT NOT NULL,
+disciplina_id INT NOT NULL,
+data_matricula DATE NOT NULL,
+nota DECIMAL(4,2),
+FOREIGN KEY (aluno_id) REFERENCES ALUNOS(id) ON DELETE CASCADE ON UPDATE CASCADE,
+FOREIGN KEY (disciplina_id) REFERENCES DISCIPLINAS(id) ON DELETE CASCADE ON UPDATE CASCADE,
+UNIQUE (aluno_id, disciplina_id)
 );
 INSERT INTO MATRICULAS (aluno_id, disciplina_id, data_matricula, nota) VALUES
 (1, 1, '2026-02-01', 8.50),
@@ -73,3 +73,37 @@ INSERT INTO MATRICULAS (aluno_id, disciplina_id, data_matricula, nota) VALUES
 (3, 3, '2026-02-03', 6.50),
 (4, 4, '2026-02-03', 10.00),
 (5, 5, '2026-02-04', 8.00);
+
+SELECT
+A.nome AS aluno,
+D.nome AS disciplina,
+M.data_matricula AS data_matricula,
+M.nota AS nota
+FROM MATRICULAS M
+INNER JOIN ALUNOS A ON M.aluno_id = A.id
+INNER JOIN DISCIPLINAS D ON M.disciplina_id = D.id
+ORDER BY A.nome;
+
+
+CREATE VIEW VW_BOLETIM AS
+SELECT
+A.ID AS aluno_id,
+A.nome AS ALUNOs,
+D.nome AS DISCIPLINAS,
+D.carga_horaria AS carga_horaria,
+P.nome AS PROFESSOR,
+M.nota AS nota,
+
+CASE
+WHEN M.nota IS NULL THEN "Nota ainda não lançada"
+WHEN M.nota >= 7 THEN "Aluno aprovado"
+ELSE "Aluno Reprovado"
+END AS Situacao
+
+FROM MATRICULAS M
+INNER JOIN ALUNOS A on M.aluno_id = A.id
+INNER JOIN DISCIPLINAS D ON M.disciplina_id = D.id
+LEFT JOIN MINISTRA MI ON D.id = MI.disciplinas_id
+LEFT JOIN PROFESSOR P ON MI.professor_id = P.id;
+
+SELECT * FROM VW_BOLETIM ORDER BY ALUNOS;
