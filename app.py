@@ -1,44 +1,50 @@
 import mysql.connector
 from mysql.connector import Error
 
+conexao = None
+
 try:
-    # Conexão com o MySQL
+    
     conexao = mysql.connector.connect(
-        host='localhost',           # ou IP do servidor MySQL
-        database='sistema_escolar',
+        host='localhost',
+        database='ESCOLA',
         user='root',
         password='1a2b3c4d'
     )
 
     if conexao.is_connected():
         print("Conectado ao MySQL!")
-
         cursor = conexao.cursor()
 
-        # Exibe versão do MySQL
+       
         cursor.execute("SELECT VERSION()")
         versao = cursor.fetchone()
         print("Versão do MySQL:", versao[0])
 
-        # Exemplo de inserção de um novo professor
-        cursor.execute("""
-            INSERT INTO professor (nome, departamento_id, salario)
+       
+        sql_insert = """
+            INSERT INTO PROFESSOR (nome, cpf, dt_nascimento)
             VALUES (%s, %s, %s)
-        """, ('João Silva', 1, 5100.00))
+        """
+        dados_professor = ('João Silva', '12345678901', '1986-05-20')
+        
+        cursor.execute(sql_insert, dados_professor)
         conexao.commit()
         print("Linhas inseridas:", cursor.rowcount)
 
-        # Exemplo de consulta
-        cursor.execute("SELECT nome, salario FROM professor")
+        
+        cursor.execute("SELECT nome, cpf, dt_nascimento FROM PROFESSOR")
         resultados = cursor.fetchall()
-        for nome, salario in resultados:
-            print(f"{nome} - R$ {salario:.2f}")
+        
+        print("\nLista de Professores:")
+        for nome, cpf, dt_nascimento in resultados:
+            print(f"{nome} | CPF: {cpf} | Nasc: {dt_nascimento}")
 
 except Error as e:
     print("Erro ao conectar ou executar comandos:", e)
 
 finally:
-    if conexao.is_connected():
+    if conexao is not None and conexao.is_connected():
         cursor.close()
         conexao.close()
-        print("Conexão encerrada.")
+        print("\nConexão encerrada.")
